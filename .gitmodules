@@ -1,3 +1,6 @@
 [submodule "ictal_onset"]
 	path = ictal_onset
 	url = https://github.com/SGascoigne97/ictal_onset
+[submodule "BrewerMap"]
+	path = BrewerMap
+	url = https://github.com/DrosteEffect/BrewerMap
