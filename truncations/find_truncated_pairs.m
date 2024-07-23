@@ -6,7 +6,7 @@ function pairs = find_truncated_pairs(imprints)
     for i = 1:length(imprints)
         imprint = imprints{i};
         onset_t(i) = find(any(imprint,1),1);
-        [max_spread_n(i), max_spread_t(i)] = max(sum(imprint,1,'omitmissing'));
+        [max_spread_n(i), max_spread_t(i)] = max(sum(imprint,1,'omitnan'));
         imprints{i} = imprint(:,onset_t(i):max_spread_t(i));
     end
     %% then find difference with DTW
