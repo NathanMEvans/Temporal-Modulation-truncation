@@ -14,7 +14,7 @@ truncation_pairs = table('Size',[0,2],'VariableNames',{'patient_ID','pair_indexe
 metadata_table = table();
 
 %% loop over patients
-for pat = 1:13 %length(patients)
+for pat = 1:length(patients)
     fprintf("Subject %d \n", pat)
     %% load data
     patient = patients{pat};
