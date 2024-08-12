@@ -104,3 +104,19 @@ xline(mean(load_diffs, "omitnan"),'red')
 text(median(load_diffs, 'omitnan'),max(hist.Values) + 0.5,sprintf("P=%0.2f T=%0.2f",P,STATS.tstat))
 ylim([0,max(hist.Values) + 1])
 
+%%
+xs = -0.95:0.1:0.95;
+figure()
+for n_x = 1:20
+    for y = 1:hist.Values(n_x)
+        scatter(xs(n_x),y-0.5,'Black','filled')
+        hold on
+    end
+end
+hold off
+xlim([-1.01,1.05])
+ylim([0,max(hist.Values) + 1])
+xline(mean(load_diffs, "omitnan"),'red')
+text(median(load_diffs, 'omitnan'),max(hist.Values) + 0.5,sprintf("P=%0.2f T=%0.2f",P,STATS.tstat))
+
+
