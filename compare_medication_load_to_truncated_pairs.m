@@ -245,43 +245,47 @@ grouped_meta_with_truncs = join(grouped_meta,truncation_pairs,'LeftKeys','patien
 grouped_meta_with_truncs.has_tapering = ~isnan(grouped_meta_with_truncs.range_combined_drug_load);
 grouped_meta_with_truncs.hass_truncations = ~cellfun('isempty', grouped_meta_with_truncs{:,'pair_indexes'} );
 
-
-age_tapering =  groupsummary(grouped_meta_with_truncs,{'has_tapering',},{'median','std'},{'age','epilepsy_duration'});
-age_tapering_truncs =  groupsummary(grouped_meta_with_truncs,{'has_tapering','hass_truncations'},{'median','std'},{'age','epilepsy_duration'});
+age_tapering_iqr =  groupsummary(grouped_meta_with_truncs,{'has_tapering'},@(x) {iqr(x)},{'age','epilepsy_duration'});
+age_tapering =  groupsummary(grouped_meta_with_truncs,{'has_tapering',},{'median'},{'age','epilepsy_duration'});
+age_tapering_truncs_iqr =  groupsummary(grouped_meta_with_truncs,{'has_tapering','hass_truncations'},@(x) {iqr(x)},{'age','epilepsy_duration'});
+age_tapering_truncs =  groupsummary(grouped_meta_with_truncs,{'has_tapering','hass_truncations'},{'median'},{'age','epilepsy_duration'});
 sex_tapering = groupsummary(grouped_meta_with_truncs,{'has_tapering','sex'});
 sex_tapering_truncs = groupsummary(grouped_meta_with_truncs,{'has_tapering','hass_truncations','sex'});
 op_tapering = groupsummary(grouped_meta_with_truncs,{'has_tapering','op_type'});
 op_tapering_truncs = groupsummary(grouped_meta_with_truncs,{'has_tapering','hass_truncations','op_type'});
 
-age_all = groupsummary(grouped_meta,{},{'median','std'},{'age','epilepsy_duration'});
+age_all_iqr = groupsummary(grouped_meta,{},@(x) {iqr(x)},{'age','epilepsy_duration'});
+age_all = groupsummary(grouped_meta,{},{'median'},{'age','epilepsy_duration'});
 sex_all = groupsummary(grouped_meta,{'sex'});
 op_all = groupsummary(grouped_meta,{'op_type'});
 
 demographics = table('Size',[5,3],'VariableNames',{'All', 'Tapered', 'Tapered with truncated pairs'},'VariableTypes',{'string','string','string'},'RowNames',{'Count', 'Age', 'Sex', 'Disease duration', 'TLE/ETLE'});
 demographics{"Count","All"} =               string(sprintf('%i',age_all.GroupCount));
-demographics{"Age","All"} =                 string(sprintf('%i(%.1f)',age_all.median_age,age_all.std_age));
+demographics{"Age","All"} =                 string(sprintf('%i(%.1f)',age_all.median_age,age_all_iqr.fun1_age{1}));
 demographics{"Sex","All"} =                 string(sprintf('%i/%i',sex_all.GroupCount(sex_all.sex == 'M'),sex_all.GroupCount(sex_all.sex == 'F')));
-demographics{"Disease duration","All"} =    string(sprintf('%i(%.1f)',age_all.median_epilepsy_duration,age_all.std_epilepsy_duration));
+demographics{"Disease duration","All"} =    string(sprintf('%i(%.1f)',age_all.median_epilepsy_duration,age_all_iqr.fun1_epilepsy_duration{1}));
 demographics{"TLE/ETLE","All"} =            string(sprintf('%i/%i',op_all.GroupCount(strcmp(op_all.op_type,'T Lx')),sum(op_all.GroupCount(~strcmp(op_all.op_type,'T Lx')))));
 
 age_tapering = age_tapering(age_tapering.has_tapering,:);
+age_tapering_iqr = age_tapering_iqr(age_tapering_iqr.has_tapering,:);
 sex_tapering = sex_tapering(sex_tapering.has_tapering,:);
 op_tapering = op_tapering(op_tapering.has_tapering,:);
 
 demographics{"Count","Tapered"} =               string(sprintf('%i',age_tapering.GroupCount));
-demographics{"Age","Tapered"} =                 string(sprintf('%i(%.1f)',age_tapering.median_age,age_tapering.std_age));
+demographics{"Age","Tapered"} =                 string(sprintf('%i(%.1f)',age_tapering.median_age,age_tapering_iqr.fun1_age{1}));
 demographics{"Sex","Tapered"} =                 string(sprintf('%i/%i',sex_tapering.GroupCount(sex_tapering.sex == 'M'),sex_tapering.GroupCount(sex_tapering.sex == 'F')));
-demographics{"Disease duration","Tapered"} =    string(sprintf('%i(%.1f)',age_tapering.median_epilepsy_duration,age_tapering.std_epilepsy_duration));
+demographics{"Disease duration","Tapered"} =    string(sprintf('%.1f(%.1f)',age_tapering.median_epilepsy_duration,age_tapering_iqr.fun1_epilepsy_duration{1}));
 demographics{"TLE/ETLE","Tapered"} =            string(sprintf('%i/%i',op_tapering.GroupCount(strcmp(op_tapering.op_type,'T Lx')),sum(op_tapering.GroupCount(~strcmp(op_tapering.op_type,'T Lx')))));
 
 age_tapering_truncs = age_tapering_truncs(age_tapering_truncs.has_tapering & age_tapering_truncs.hass_truncations ,:);
+age_tapering_truncs_iqr = age_tapering_truncs_iqr(age_tapering_truncs_iqr.has_tapering & age_tapering_truncs_iqr.hass_truncations ,:);
 sex_tapering_truncs = sex_tapering_truncs(sex_tapering_truncs.has_tapering & sex_tapering_truncs.hass_truncations ,:);
 op_tapering_truncs = op_tapering_truncs(op_tapering_truncs.has_tapering & op_tapering_truncs.hass_truncations ,:);
 
 demographics{"Count","Tapered with truncated pairs"} =               string(sprintf('%i',age_tapering_truncs.GroupCount));
-demographics{"Age","Tapered with truncated pairs"} =                 string(sprintf('%i(%.1f)',age_tapering_truncs.median_age,age_tapering_truncs.std_age));
+demographics{"Age","Tapered with truncated pairs"} =                 string(sprintf('%i(%.1f)',age_tapering_truncs.median_age,age_tapering_truncs_iqr.fun1_age{1}));
 demographics{"Sex","Tapered with truncated pairs"} =                 string(sprintf('%i/%i',sex_tapering_truncs.GroupCount(sex_tapering_truncs.sex == 'M'),sex_tapering_truncs.GroupCount(sex_tapering_truncs.sex == 'F')));
-demographics{"Disease duration","Tapered with truncated pairs"} =    string(sprintf('%i(%.1f)',age_tapering_truncs.median_epilepsy_duration,age_tapering_truncs.std_epilepsy_duration));
+demographics{"Disease duration","Tapered with truncated pairs"} =    string(sprintf('%i(%.1f)',age_tapering_truncs.median_epilepsy_duration,age_tapering_truncs_iqr.fun1_epilepsy_duration{1}));
 demographics{"TLE/ETLE","Tapered with truncated pairs"} =            string(sprintf('%i/%i',op_tapering_truncs.GroupCount(strcmp(op_tapering_truncs.op_type,'T Lx')),sum(op_tapering_truncs.GroupCount(~strcmp(op_tapering_truncs.op_type,'T Lx')))));
 demographics
 
