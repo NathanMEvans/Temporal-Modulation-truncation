@@ -51,8 +51,7 @@ has_tapering = [];
 for pat = [1:height(truncation_pairs)]
     
     patient = truncation_pairs.patient_ID{pat};
-    figure(pat);
-    sgtitle(patient);
+    
     % load BPCs
     csv = sprintf("Anonymised_Data/drug_plasma_concentrations/%s.mat",patient);
     if ~exist(csv,"file")
@@ -75,32 +74,36 @@ for pat = [1:height(truncation_pairs)]
     relative_DPC.Combined = relative_DPC.Combined./steady_state;
     metadata_table.combined_drug_load(strcmp(metadata_table.patient_id,patient)) = relative_DPC.Combined(find(ismember(relative_DPC.DateTime, metadata_table.rounded_start(strcmp(metadata_table.patient_id,patient)))));
 
-    subplot(10,10,[1:8,11:18])
-    hold on
-    plot(relative_DPC,'DateTime','Combined')
-    scatter(metadata_table.rounded_start(strcmp(metadata_table.patient_id,patient)),metadata_table.combined_drug_load(strcmp(metadata_table.patient_id,patient)),'filled','black')
-    ylim([0,max(relative_DPC.Combined)])
-    %title('Drug load at seizure events')
-    xlabel("");
-    ax = gca;
-    ax.XTickLabel = ax.XTickLabel;
-
-    n_seizures = height(metadata_table.combined_drug_load(strcmp(metadata_table.patient_id,patient)));
-    subplot(10,10,[22:25])
-    plot(metadata_table.combined_drug_load(strcmp(metadata_table.patient_id,patient)))
-    hold on
-    scatter(1:n_seizures,metadata_table.combined_drug_load(strcmp(metadata_table.patient_id,patient)),'filled','black')
-    xlim([0.5,n_seizures+0.5])
-    xticks([])
-
-    subplot(10,10,[31,41,51,61])
-    plot(metadata_table.combined_drug_load(strcmp(metadata_table.patient_id,patient)))
-    hold on
-    scatter(1:n_seizures,metadata_table.combined_drug_load(strcmp(metadata_table.patient_id,patient)),'filled','black')
-    xlim([0.5,n_seizures+0.5])
-    view([90 -90])
-    set(gca, 'xDir','reverse')
-    set(gca, 'YDir','reverse')
+    if pat == 27
+        figure(pat);
+        sgtitle(patient);
+        subplot(10,10,[1:8,11:18])
+        hold on
+        plot(relative_DPC,'DateTime','Combined')
+        scatter(metadata_table.rounded_start(strcmp(metadata_table.patient_id,patient)),metadata_table.combined_drug_load(strcmp(metadata_table.patient_id,patient)),'filled','black')
+        ylim([0,max(relative_DPC.Combined)])
+        %title('Drug load at seizure events')
+        xlabel("");
+        ax = gca;
+        ax.XTickLabel = ax.XTickLabel;
+    
+        n_seizures = height(metadata_table.combined_drug_load(strcmp(metadata_table.patient_id,patient)));
+        subplot(10,10,[22:25])
+        plot(metadata_table.combined_drug_load(strcmp(metadata_table.patient_id,patient)))
+        hold on
+        scatter(1:n_seizures,metadata_table.combined_drug_load(strcmp(metadata_table.patient_id,patient)),'filled','black')
+        xlim([0.5,n_seizures+0.5])
+        xticks([])
+    
+        subplot(10,10,[31,41,51,61])
+        plot(metadata_table.combined_drug_load(strcmp(metadata_table.patient_id,patient)))
+        hold on
+        scatter(1:n_seizures,metadata_table.combined_drug_load(strcmp(metadata_table.patient_id,patient)),'filled','black')
+        xlim([0.5,n_seizures+0.5])
+        view([90 -90])
+        set(gca, 'xDir','reverse')
+        set(gca, 'YDir','reverse')
+    end
 end
 
 save("truncation_pairs_metadata","metadata_table","truncation_pairs")
@@ -118,18 +121,20 @@ for pat = [1:height(truncation_pairs)]
     if all(isnan(pat_drug_load))
         continue
     end
-    figure(pat);
-    subplot(10,10,[32:36,42:46,52:56,62:66])
-    drug_load_differences = pat_drug_load - pat_drug_load';
-    imagesc(drug_load_differences);
-    set(gca, 'YDir','reverse')
-    yticks([])
-    %title("Difference in ASM loads")
-    xlabel("Seizures")
-    %ylabel("Seizures")
-    colorbar
-    cmap = brewermap(256,'RdBu');
-    colormap(cmap);
+    if pat == 27
+        figure(pat);
+        subplot(10,10,[32:36,42:46,52:56,62:66])
+        drug_load_differences = pat_drug_load - pat_drug_load';
+        imagesc(drug_load_differences);
+        set(gca, 'YDir','reverse')
+        yticks([])
+        %title("Difference in ASM loads")
+        xlabel("Seizures")
+        %ylabel("Seizures")
+        colorbar
+        cmap = brewermap(256,'RdBu');
+        colormap(cmap);
+    end
 
     pairs =  truncation_pairs.pair_indexes{strcmp(string(patients(pat)),truncation_pairs.patient_ID)};
     if isempty(pairs)
@@ -141,49 +146,50 @@ for pat = [1:height(truncation_pairs)]
     for pair = 1:size(pairs,1)
         continuing = pairs(pair,1);
         truncated = pairs(pair,2);
-        rectangle('Position',[continuing-0.5 truncated-0.5 1 1],'LineWidth',2)
+        if pat == 27
+            rectangle('Position',[continuing-0.5 truncated-0.5 1 1],'LineWidth',2)
+        end
         pat_load_diffs(end+1) = pat_drug_load(truncated) -  pat_drug_load(continuing);
     end
     load_diffs(pat) = median(pat_load_diffs);
 
-
-    subplot(10,10,[28,38,48,58,68])
-    
-    boxchart(ones(size(pat_load_diffs)),pat_load_diffs);
-    hold on
-    colour_indexes = ceil((pat_load_diffs - min(drug_load_differences,[],"all"))/range(drug_load_differences,"all")*height(cmap));
-    scatter(ones(size(pat_load_diffs)),pat_load_diffs,80,cmap(colour_indexes,:),'filled','square','MarkerEdgeColor','b')
-    
-    %title("truncated pairs")
-    ylabel("Difference in ASM loads")
-    ylim([-1,1])
+    if pat == 27
+        subplot(10,10,[28,38,48,58,68])
+        boxchart(ones(size(pat_load_diffs)),pat_load_diffs);
+        hold on
+        colour_indexes = ceil((pat_load_diffs - min(drug_load_differences,[],"all"))/range(drug_load_differences,"all")*height(cmap));
+        scatter(ones(size(pat_load_diffs)),pat_load_diffs,80,cmap(colour_indexes,:),'filled','square','MarkerEdgeColor','b')
+        
+        %title("truncated pairs")
+        ylabel("Difference in ASM loads")
+        ylim([-1,1])
+    end
 end
 %%
-for pat = [1:height(truncation_pairs)]
-    figure(pat)
-    subplot(10,10,[71:78,81:88,91:98])
+pat = 27;
+figure(pat)
+subplot(10,10,[71:78,81:88,91:98])
 
 
-    hist = histogram(load_diffs,'BinEdges',-1:0.1:1);
-    hist_values = hist.Values;
-    xs = -0.95:0.1:0.95;
-    for n_x = 1:20
-        for y = 1:hist_values(n_x)
-            scatter(xs(n_x),y,'Black','filled')
-            hold on
-        end
+hist = histogram(load_diffs,'BinEdges',-1:0.1:1);
+hist_values = hist.Values;
+xs = -0.95:0.1:0.95;
+for n_x = 1:20
+    for y = 1:hist_values(n_x)
+        scatter(xs(n_x),y,'Black','filled')
+        hold on
     end
-    hold off
-    xlim([-1.01,1.05])
-
-    %title("Histogram of difference in medication load between truncated and continuing seizures for each patient")
-    xlabel("medication load difference")
-    ylabel("Patient count")
-    xline(mean(load_diffs, "omitnan"),'red')
-    [H,P,CI,STATS] = ttest(load_diffs);
-    text(median(load_diffs, 'omitnan'),max(hist_values) + 0.5,sprintf("P=%0.2f T=%0.2f",P,STATS.tstat))
-    ylim([0.5,max(hist_values) + 1])
 end
+hold off
+xlim([-1.01,1.05])
+
+%title("Histogram of difference in medication load between truncated and continuing seizures for each patient")
+xlabel("medication load difference")
+ylabel("Patient count")
+xline(mean(load_diffs, "omitnan"),'red')
+[H,P,CI,STATS] = ttest(load_diffs);
+text(median(load_diffs, 'omitnan'),max(hist_values) + 0.5,sprintf("P=%0.2f T=%0.2f",P,STATS.tstat))
+ylim([0.5,max(hist_values) + 1])
 
 fprintf("mean = %f\n",mean(load_diffs,'omitmissing'))
 fprintf("std = %f\n",std(load_diffs,'omitmissing'))
